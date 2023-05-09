@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReservationSystem.Domain.Models;
 using ReservationSystem.Services.Interfaces;
 
-namespace ReservationSystemAPI.Controllers
+namespace ReservationSystem.API.Controllers
 {
     [ApiController]
     public class StudentsController : ControllerBase

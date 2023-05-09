@@ -24,12 +24,7 @@ namespace ReservationSystem.API.Controllers
             ReservationStatus? status = null)
         {
             var requests = await ReservationRequest.GetAllRequests(cancellationToken);
-            
-            if (status.HasValue)
-            {
-                requests = requests.Where(r => r.Status == status.Value);
-            }
-            
+
             return Ok(requests);
         }
 
@@ -69,21 +64,13 @@ namespace ReservationSystem.API.Controllers
         public async Task<IActionResult> GetRequestsForClassroom(int classroomId, int chiefId, CancellationToken cancellationToken)
         {
             var requests = await ReservationRequest.GetRequestsForClassroom(chiefId, classroomId, cancellationToken);
-            if (requests == null)
-            {
-                return BadRequest();
-            }
+            
             return Ok(requests);
         }
         
         [HttpPut("{classroomId}/{chiefId}/{reservationRequestId}/{newStatus}")]
         public async Task<IActionResult> UpdateReservationRequestStatus(int classroomId, int chiefId, int reservationRequestId, int newStatus, CancellationToken cancellationToken)
         {
-            if (!Enum.IsDefined(typeof(ReservationStatus), newStatus))
-            {
-                return BadRequest("Invalid ReservationStatus value");
-            }
-
             var isSuccess = await ReservationRequest.UpdateReservationRequestStatus(reservationRequestId, chiefId, (ReservationStatus)newStatus, cancellationToken);
             
                 return Ok();
