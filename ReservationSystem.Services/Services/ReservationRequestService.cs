@@ -74,8 +74,7 @@ namespace ReservationSystem.Services.Services
                 ClassroomId = requestDto.ClassroomId,
                 StudentId = requestDto.StudentId,
                 StartTime = requestDto.StartTime,
-                EndTime = requestDto.EndTime,
-                Status = requestDto.Status
+                EndTime = requestDto.EndTime
             };
             
             ReservationDbContext.ReservationRequests.Add(newRequest);
@@ -135,7 +134,7 @@ namespace ReservationSystem.Services.Services
             }
             
             var requests = await ReservationDbContext.ReservationRequests
-                .Where(r => r.ClassroomId == classroomId)
+                .Where(x => x.ClassroomId == classroomId)
                 .ToListAsync(cancellationToken);
             
             return requests;

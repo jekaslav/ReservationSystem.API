@@ -21,13 +21,15 @@ namespace ReservationSystem.Services.Services
         public async Task<bool> CreateReservation(int studentId, int classroomId, DateTimeOffset startTime,
             DateTimeOffset endTime, CancellationToken cancellationToken)
         {
-            var existingReservation = await ReservationDbContext.Reservations
-                .Where(x => x.ClassroomId == classroomId && x.StartTime < endTime && x.EndTime > startTime)
+            var existingReservation = ReservationDbContext.Reservations
+                .Where(x => x.ClassroomId == classroomId)
+                .Where(x => x.StartTime < endTime)
+                .Where(x => x.EndTime > startTime)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (existingReservation != null)
+            if (existingReservation is not null)
             {
-                return false;
+                throw new InvalidOperationException();
             }
 
             var reservation = new ReservationEntity
