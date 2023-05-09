@@ -1,16 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Converters;
+using ReservationSystem.Domain.Contexts;
+using ReservationSystem.Services.Interfaces;
+using ReservationSystem.Services.Mappers;
+using ReservationSystem.Services.Services;
 
 namespace ReservationSystem.API
 {
@@ -22,19 +21,33 @@ namespace ReservationSystem.API
         }
 
         public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
+        
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutoMapper(typeof(EntityToDtoProfile));
+            
+            services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<IChiefService, ChiefService>();
+            services.AddScoped<IClassroomService, ClassroomService>();
+            services.AddScoped<IReservationRequestService, ReservationRequestService>();
+            
+            
+            services.AddControllers()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                });
 
-            services.AddControllers();
+            var connection = Configuration.GetConnectionString("SqlConnection");
+            services.AddDbContext<ReservationDbContext>(options =>
+                options.UseSqlServer(connection, b => b.MigrationsAssembly("ReservationSystem.API")));
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ReservationSystem.API", Version = "v1" });
             });
         }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -50,10 +63,7 @@ namespace ReservationSystem.API
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }
