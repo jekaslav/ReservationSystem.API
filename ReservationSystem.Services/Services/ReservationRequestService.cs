@@ -74,7 +74,7 @@ namespace ReservationSystem.Services.Services
                 ClassroomId = requestDto.ClassroomId,
                 StudentId = requestDto.StudentId,
                 StartTime = requestDto.StartTime,
-                EndTime = requestDto.EndTime
+                EndTime = requestDto.EndTime,
             };
             
             ReservationDbContext.ReservationRequests.Add(newRequest);
