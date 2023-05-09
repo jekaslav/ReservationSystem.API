@@ -11,11 +11,5 @@ namespace ReservationSystem.Domain.Entities
         
         public string Email { get; set; }
         public IEnumerable<ChiefClassroomEntity> ChiefClassrooms { get; set; }
-        
-        // public int? GetAssignedClassroomId(int classroomId)
-        // {
-        //     var chiefClassroom = ChiefClassrooms.FirstOrDefault(x => x.ClassroomId == classroomId);
-        //     return chiefClassroom?.ClassroomId;
-        // }
     }
 }

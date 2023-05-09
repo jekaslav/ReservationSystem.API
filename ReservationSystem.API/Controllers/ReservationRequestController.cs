@@ -7,7 +7,7 @@ using ReservationSystem.Domain.Enums;
 using ReservationSystem.Domain.Models;
 using ReservationSystem.Services.Interfaces;
 
-namespace ReservationSystemAPI.Controllers
+namespace ReservationSystem.API.Controllers
 {
     [ApiController]
     public class ReservationRequestController : ControllerBase

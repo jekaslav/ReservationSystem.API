@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ReservationSystem.Domain.Entities;
+using ReservationSystem.Domain.Enums;
 
 namespace ReservationSystem.Domain.Contexts
 {
@@ -61,6 +62,7 @@ namespace ReservationSystem.Domain.Contexts
             modelBuilder.Entity<ReservationRequestEntity>(entity =>
             {
                 entity.HasKey(e => e.Id);
+                entity.Property(e => e.Status).HasDefaultValue(ReservationStatus.Pending);
             });
             
             // Student-ReservationRequest One-To-Many

@@ -25,9 +25,9 @@ namespace ReservationSystemAPI.Controllers
         }
 
         [HttpGet("students/{id}")]
-        public async Task<IActionResult> GetStudentsById(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetStudentById(int id, CancellationToken cancellationToken)
         {
-            var result = await StudentService.GetStudentsById(id, cancellationToken);
+            var result = await StudentService.GetStudentById(id, cancellationToken);
 
             return Ok(result);
         }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ReservationSystem.Domain.Contexts;
 using ReservationSystem.Domain.Entities;
@@ -32,7 +33,7 @@ namespace ReservationSystem.Services.Services
                 .Select(x => Mapper.Map<ReservationRequestDto>(x))
                 .ToListAsync(cancellationToken);
             
-            if (!requests.Any())
+            if (requests is null)
             {
                 throw new NullReferenceException();
             }
@@ -44,14 +45,14 @@ namespace ReservationSystem.Services.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             
             var request = await ReservationDbContext.ReservationRequests
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentException($"Reservation request with ID {id} does not exist.");
             }
@@ -63,7 +64,7 @@ namespace ReservationSystem.Services.Services
         
         public async Task<int> Create(ReservationRequestDto requestDto, CancellationToken cancellationToken)
         {
-            if (requestDto == null)
+            if (requestDto is null)
             {
                 throw new ArgumentNullException(nameof(requestDto));
             }
@@ -78,7 +79,6 @@ namespace ReservationSystem.Services.Services
             };
             
             ReservationDbContext.ReservationRequests.Add(newRequest);
-            
             await ReservationDbContext.SaveChangesAsync(cancellationToken);
             
             return newRequest.Id;
@@ -88,7 +88,7 @@ namespace ReservationSystem.Services.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentException("Invalid reservation request ID");
+                throw new BadHttpRequestException("Invalid reservation request ID");
             }
 
             var requestToUpdate = await ReservationDbContext.ReservationRequests
@@ -108,7 +108,7 @@ namespace ReservationSystem.Services.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentException("Invalid reservation request ID");
+                throw new BadHttpRequestException("Invalid reservation request ID");
             }
             
             var requestToDelete = await ReservationDbContext.ReservationRequests
@@ -125,9 +125,11 @@ namespace ReservationSystem.Services.Services
         public async Task<List<ReservationRequestEntity>> GetRequestsForClassroom(int classroomId, int chiefId, CancellationToken cancellationToken)
         {
             var chiefClassroom = await ReservationDbContext.ChiefClassrooms
-                .FirstOrDefaultAsync(x => x.ClassroomId == classroomId && x.ChiefId == chiefId, cancellationToken);
+                .Where(x => x.ClassroomId == classroomId)
+                .Where(x => x.ChiefId == chiefId)
+                .FirstOrDefaultAsync(cancellationToken);
             
-            if (chiefClassroom == null)
+            if (chiefClassroom is null)
             {
                 return null;
             }
@@ -143,58 +145,50 @@ namespace ReservationSystem.Services.Services
         {
             var request = await ReservationDbContext.ReservationRequests
                 .FirstOrDefaultAsync(x => x.Id == reservationRequestId, cancellationToken);
-            
-            if (request == null)
+            if (request is null)
             {
                 return false;
             }
 
             var chiefClassroom = await ReservationDbContext.ChiefClassrooms
-                .SingleOrDefaultAsync(x => x.ClassroomId == request.ClassroomId && x.ChiefId == chiefId, cancellationToken);
-            
-            if (chiefClassroom == null)
+                .Where(x => x.ClassroomId == request.ClassroomId)
+                .Where(x => x.ChiefId == chiefId)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (chiefClassroom is null)
             {
                 return false;
             }
 
-            var success = await CreateReservation(request.StudentId, request.ClassroomId, request.StartTime, request.EndTime, cancellationToken);
-            
+            var reservationService = new ReservationService(ReservationDbContext);
+            var success = await reservationService.CreateReservation(request.StudentId, request.ClassroomId,
+                request.StartTime, request.EndTime, cancellationToken);
             if (!success)
             {
                 return false;
             }
-            
+
             request.Status = newStatus;
 
-            await ReservationDbContext.SaveChangesAsync(cancellationToken);
-
-            return true;
-        }
-
-        private async Task<bool> CreateReservation(int studentId, int classroomId, DateTimeOffset startTime, DateTimeOffset endTime, CancellationToken cancellationToken)
-        {
-            var existingReservation = await ReservationDbContext.Reservations
-                .Where(x => x.ClassroomId == classroomId && x.StartTime < endTime && x.EndTime > startTime)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (existingReservation != null)
+            await using var transaction = await ReservationDbContext.Database.BeginTransactionAsync(cancellationToken);
+            try
             {
-                return false;
+                var reservationCreated = await reservationService.CreateReservation(request.StudentId, request.ClassroomId, 
+                    request.StartTime, request.EndTime, cancellationToken);
+                if (!reservationCreated) 
+                {
+                    return false;
+                }
+  
+                request.Status = newStatus;
+                await ReservationDbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+                return true;
             }
-
-            var reservation = new ReservationEntity
+            catch (Exception)
             {
-                StudentId = studentId,
-                ClassroomId = classroomId,
-                StartTime = startTime,
-                EndTime = endTime
-            };
-            
-            ReservationDbContext.Reservations.Add(reservation);
-
-            await ReservationDbContext.SaveChangesAsync(cancellationToken);
-
-            return true;
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
     }
 }

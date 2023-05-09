@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ReservationSystem.Domain.Contexts;
 using ReservationSystem.Domain.Entities;
@@ -31,7 +32,7 @@ namespace ReservationSystem.Services.Services
                 .Select(x => Mapper.Map<StudentDto>(x))
                 .ToListAsync(cancellationToken);
 
-            if (!students.Any())
+            if (students is null)
             {
                 throw new NullReferenceException();
             }
@@ -39,11 +40,11 @@ namespace ReservationSystem.Services.Services
             return students;
         }
 
-        public async Task<StudentDto> GetStudentsById(int id, CancellationToken cancellationToken)
+        public async Task<StudentDto> GetStudentById(int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             
             var student = await ReservationDbContext.Students
@@ -51,9 +52,9 @@ namespace ReservationSystem.Services.Services
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(cancellationToken);
             
-            if (student == null)
+            if (student is null)
             {
-                throw new KeyNotFoundException();
+                throw new NullReferenceException();
             }
             
             var result = Mapper.Map<StudentDto>(student);
@@ -64,6 +65,11 @@ namespace ReservationSystem.Services.Services
         public async Task<bool> Create(StudentDto studentDto, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(studentDto.Name))
+            {
+                throw new ArgumentException();
+            }
+            
+            if (string.IsNullOrWhiteSpace(studentDto.Email))
             {
                 throw new ArgumentException();
             }
@@ -86,16 +92,16 @@ namespace ReservationSystem.Services.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             
             var studentToUpdate = await ReservationDbContext.Students
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (studentToUpdate == null)
+            if (studentToUpdate is null)
             {
-                throw new KeyNotFoundException();
+                throw new NullReferenceException();
             }
             
             studentToUpdate.Name = studentDto.Name ?? studentToUpdate.Name;
@@ -110,16 +116,16 @@ namespace ReservationSystem.Services.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             
             var studentToDelete = await ReservationDbContext.Students
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(cancellationToken);
             
-            if (studentToDelete == null)
+            if (studentToDelete is null)
             {
-                throw new KeyNotFoundException();
+                throw new NullReferenceException();
             }
             
             ReservationDbContext.Students.Remove(studentToDelete);

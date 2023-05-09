@@ -19,9 +19,9 @@ namespace ReservationSystem.Domain.Entities
         public DateTimeOffset EndTime { get; set; }
         public ReservationStatus Status { get; set; }
         
-        [JsonIgnore]
+        // [JsonIgnore]
         public StudentEntity Student { get; set; }
-        [JsonIgnore]
+        // [JsonIgnore]
         public ClassroomEntity Classroom { get; set; }
     }
 }

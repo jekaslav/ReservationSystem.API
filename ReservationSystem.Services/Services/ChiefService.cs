@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using ReservationSystem.Domain.Contexts;
 using ReservationSystem.Domain.Entities;
@@ -31,7 +32,7 @@ namespace ReservationSystem.Services.Services
                 .Select(x => Mapper.Map<ChiefDto>(x))
                 .ToListAsync(cancellationToken);
 
-            if (!chiefs.Any())
+            if (chiefs == null)
             {
                 throw new NullReferenceException();
             }
@@ -39,11 +40,11 @@ namespace ReservationSystem.Services.Services
             return chiefs;
         }
 
-        public async Task<ChiefDto> GetChiefsById(int id, CancellationToken cancellationToken)
+        public async Task<ChiefDto> GetChiefById(int id, CancellationToken cancellationToken)
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             
             var chiefs = await ReservationDbContext.Chiefs
@@ -51,9 +52,9 @@ namespace ReservationSystem.Services.Services
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(cancellationToken);
             
-            if (chiefs == null)
+            if (chiefs is null)
             {
-                throw new KeyNotFoundException();
+                throw new NullReferenceException();
             }
 
             var result = Mapper.Map<ChiefDto>(chiefs);
@@ -64,6 +65,11 @@ namespace ReservationSystem.Services.Services
         public async Task<bool> Create(ChiefDto chiefDto, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(chiefDto.Name))
+            {
+                throw new ArgumentException();
+            }
+            
+            if (string.IsNullOrWhiteSpace(chiefDto.Email))
             {
                 throw new ArgumentException();
             }
@@ -86,16 +92,16 @@ namespace ReservationSystem.Services.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             
             var chiefToUpdate = await ReservationDbContext.Chiefs
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(cancellationToken);
             
-            if (chiefToUpdate == null)
+            if (chiefToUpdate is null)
             {
-                throw new KeyNotFoundException();
+                throw new NullReferenceException();
             }
 
             chiefToUpdate.Name = chiefDto.Name ?? chiefToUpdate.Name;
@@ -110,16 +116,16 @@ namespace ReservationSystem.Services.Services
         {
             if (id <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             
             var chiefToDelete = await ReservationDbContext.ChiefClassrooms
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(cancellationToken);
             
-            if (chiefToDelete == null)
+            if (chiefToDelete is null)
             {
-                throw new KeyNotFoundException();
+                throw new NullReferenceException();
             }
 
             ReservationDbContext.ChiefClassrooms.Remove(chiefToDelete);
@@ -132,25 +138,17 @@ namespace ReservationSystem.Services.Services
         {
             if (classroomId <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             if (chiefId <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
-            }
-            
-            var chief = await ReservationDbContext.Chiefs.FindAsync(chiefId);
-            var classroomToControl = await ReservationDbContext.Classrooms.FindAsync(classroomId);
-
-            if (chief == null || classroomToControl == null)
-            {
-                return false;
+                throw new BadHttpRequestException("Invalid ID");
             }
 
             var chiefClassroom = new ChiefClassroomEntity
             {
-                Chief = chief,
-                Classroom = classroomToControl
+                ChiefId = chiefId,
+                ClassroomId = classroomId
             };
 
             ReservationDbContext.ChiefClassrooms.Add(chiefClassroom);
@@ -163,17 +161,17 @@ namespace ReservationSystem.Services.Services
         {
             if (classroomId <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             if (chiefId <= 0)
             {
-                throw new ArgumentOutOfRangeException("Invalid ID");
+                throw new BadHttpRequestException("Invalid ID");
             }
             
             var chiefClassroom = await ReservationDbContext.ChiefClassrooms
                 .FirstOrDefaultAsync(x => x.ClassroomId == classroomId && x.ChiefId == chiefId, cancellationToken);
             
-            if (chiefClassroom == null)
+            if (chiefClassroom is null)
             {
                 return false;
             }

@@ -25,9 +25,9 @@ namespace ReservationSystem.API.Controllers
         }
         
         [HttpGet("chiefs/{id}")]
-        public async Task<IActionResult> GetClassroomsById(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetChiefById(int id, CancellationToken cancellationToken)
         {
-            var result = await ChiefService.GetChiefsById(id, cancellationToken);
+            var result = await ChiefService.GetChiefById(id, cancellationToken);
 
             return Ok(result);
         }

@@ -12,11 +12,5 @@ namespace ReservationSystem.Domain.Entities
         public IEnumerable<ReservationRequestEntity> ReservationRequestList { get; set; }
         public IEnumerable<ReservationEntity> ReservationList { get; set; }
         public IEnumerable<ChiefClassroomEntity> ChiefClassrooms { get; set; }
-        
-        // public int? GetClassroomChiefId()
-        // {
-        //     var chiefClassroom = ChiefClassrooms.FirstOrDefault();
-        //     return chiefClassroom?.ChiefId;
-        // }
     }
 }
