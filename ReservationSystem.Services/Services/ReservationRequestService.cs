@@ -173,9 +173,9 @@ namespace ReservationSystem.Services.Services
             {
                 var reservationCreated = await reservationService.CreateReservation(request.StudentId, request.ClassroomId, 
                     request.StartTime, request.EndTime, cancellationToken);
-                if (!reservationCreated) 
+                if (!reservationCreated)
                 {
-                    return false;
+                    throw new Exception("reservation does not exist");
                 }
   
                 request.Status = newStatus;
@@ -186,7 +186,7 @@ namespace ReservationSystem.Services.Services
             catch (Exception)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                throw;
+                return false;
             }
         }
     }
