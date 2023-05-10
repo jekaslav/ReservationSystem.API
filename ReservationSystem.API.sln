@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReservationSystem.Domain", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReservationSystem.Services", "ReservationSystem.Services\ReservationSystem.Services.csproj", "{58D923E0-8C8C-4189-97B5-2F88F3C3F81B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReservationSystem.UnitTests", "ReservationSystem.UnitTests\ReservationSystem.UnitTests.csproj", "{88542D46-F193-4152-BECD-3D0AA78BD896}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{58D923E0-8C8C-4189-97B5-2F88F3C3F81B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58D923E0-8C8C-4189-97B5-2F88F3C3F81B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58D923E0-8C8C-4189-97B5-2F88F3C3F81B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88542D46-F193-4152-BECD-3D0AA78BD896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88542D46-F193-4152-BECD-3D0AA78BD896}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88542D46-F193-4152-BECD-3D0AA78BD896}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88542D46-F193-4152-BECD-3D0AA78BD896}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
