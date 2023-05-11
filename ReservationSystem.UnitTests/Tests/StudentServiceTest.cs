@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -40,7 +41,7 @@ namespace ReservationSystem.UnitTests.Tests
         }
         
         [Fact]
-        public async Task<bool> CreateStudent_PropertiesValuesCreatedCorrectly()
+        public async Task CreateStudent_PropertiesValuesCreatedCorrectly()
         {
             var studentDto = new StudentDto
             {
@@ -60,12 +61,10 @@ namespace ReservationSystem.UnitTests.Tests
             Assert.NotNull(student);
             Assert.Equal(studentDto.Email, student.Email);
             Assert.Equal(studentDto.Name, student.Name);
-
-            return true;
         }
         
         [Fact]
-        public async Task<bool> UpdateStudent_PropertiesValuesCreatedCorrectly()
+        public async Task UpdateStudent_PropertiesValuesCreatedCorrectly()
         {
             var studentDto = new StudentDto
             {
@@ -85,29 +84,72 @@ namespace ReservationSystem.UnitTests.Tests
             Assert.NotNull(student);
             Assert.Equal(studentDto.Email, student.Email);
             Assert.Equal(studentDto.Name, student.Name);
-            
-            return true;
         }
         
         [Fact]
-        public async Task<bool> DeleteStudent_StudentIsDeleted()
+        public async Task DeleteStudent_StudentIsDeleted()
         {
+            var deleteId = 5;
             var studentEntity = await Context.Students
                 .AsNoTracking()
-                .Where(x => x.Id == 5)
+                .Where(x => x.Id == deleteId)
                 .FirstOrDefaultAsync();
             Assert.NotNull(studentEntity);
             
-            var isDeleted = await _service.Delete(studentEntity.Id, CancellationToken.None);
+            var isDeleted = await _service.Delete(deleteId, CancellationToken.None);
             Assert.True(isDeleted);
             
             var deletedStudent = await Context.Students
                 .AsNoTracking()
-                .Where(x => x.Id == studentEntity.Id)
+                .Where(x => x.Id == deleteId)
                 .FirstOrDefaultAsync();
             Assert.Null(deletedStudent);
-
-            return true;
+        }
+        
+        [Fact]
+        public async Task GetStudentById_ThrowsArgumentExceptionForNegativeId()
+        {
+            var negativeId = -1;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.GetStudentById(negativeId, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task CreateStudent_ThrowsArgumentExceptionForNullOrWhiteSpaceNameOrEmail()
+        {
+            var studentDto = new StudentDto
+            {
+                Id = 2,
+                Name = " ",
+                Email = null
+            };
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Create(studentDto, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task UpdateStudent_ThrowsArgumentExceptionForNegativeId()
+        {
+            var studentDto = new StudentDto
+            {
+                Name = "UpdatedStudentName",
+                Email = "updated_student_email@example.com"
+            };
+            var negativeId = -5;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Update(negativeId, studentDto, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task DeleteStudent_ThrowsArgumentExceptionForNegativeId()
+        {
+            var negativeId = -5;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Delete(negativeId, CancellationToken.None));
         }
     }
 }

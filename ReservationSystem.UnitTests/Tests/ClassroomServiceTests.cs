@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -40,7 +41,7 @@ namespace ReservationSystem.UnitTests.Tests
         }
         
         [Fact]
-        public async Task<bool> CreateClassroom_PropertiesValuesCreatedCorrectly()
+        public async Task CreateClassroom_PropertiesValuesCreatedCorrectly()
         {
             var classroomDto = new ClassroomDto
             {
@@ -60,12 +61,10 @@ namespace ReservationSystem.UnitTests.Tests
             Assert.Equal(classroomDto.RoomNumber, createdClassroom.RoomNumber);
             Assert.Equal(classroomDto.Capacity, createdClassroom.Capacity);
             Assert.Equal(classroomDto.Location, createdClassroom.Location);
-
-            return true;
         }
 
         [Fact] 
-        public async Task<bool> UpdateClassroom_PropertiesValuesCreatedCorrectly()
+        public async Task UpdateClassroom_PropertiesValuesCreatedCorrectly()
         {
             var classroomDto = new ClassroomDto
             {
@@ -87,29 +86,74 @@ namespace ReservationSystem.UnitTests.Tests
             Assert.Equal(classroomDto.RoomNumber, classroom.RoomNumber);
             Assert.Equal(classroomDto.Capacity, classroom.Capacity);
             Assert.Equal(classroomDto.Location, classroom.Location);
-            
-            return true;
         }
         
         [Fact]
-        public async Task<bool> DeleteClassroom_ClassroomIsDeleted()
+        public async Task DeleteClassroom_ClassroomIsDeleted()
         {
+            var deleteId = 2;
             var classroomEntity = await Context.Classrooms
                 .AsNoTracking()
-                .Where(x => x.Id == 2)
+                .Where(x => x.Id == deleteId)
                 .FirstOrDefaultAsync();
             Assert.NotNull(classroomEntity);
             
-            var isDeleted = await _service.Delete(classroomEntity.Id, CancellationToken.None);
+            var isDeleted = await _service.Delete(deleteId, CancellationToken.None);
             Assert.True(isDeleted);
             
             var deletedClassroom = await Context.Classrooms
                 .AsNoTracking()
-                .Where(x => x.Id == classroomEntity.Id)
+                .Where(x => x.Id == deleteId)
                 .FirstOrDefaultAsync();
             Assert.Null(deletedClassroom);
-
-            return true;
+        }
+        
+        [Fact]
+        public async Task GetClassroomById_ThrowsArgumentExceptionForNegativeId()
+        {
+            var negativeId = -1;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.GetClassroomById(negativeId, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task CreateClassroom_ThrowsArgumentExceptionForNullLocation()
+        {
+            var classroomDto = new ClassroomDto
+            {
+                Id = 12,
+                RoomNumber = 4,
+                Capacity = 5,
+                Location = null
+            };
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Create(classroomDto, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task UpdateClassroom_ThrowsArgumentExceptionForNegativeId()
+        {
+            var classroomDto = new ClassroomDto
+            {
+                RoomNumber = 5,
+                Capacity = 6,
+                Location = "UpdatedTestLocationName",
+            };
+            var negativeId = -2;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Update(negativeId, classroomDto, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task DeleteClassroom_ThrowsArgumentExceptionForNegativeId()
+        {
+            var negativeId = -2;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Delete(negativeId, CancellationToken.None));
         }
     }
 }

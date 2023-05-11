@@ -29,7 +29,7 @@ namespace ReservationSystem.Services.Services
 
             if (existingReservation is not null)
             {
-                throw new InvalidOperationException();
+                return false;
             }
 
             var reservation = new ReservationEntity

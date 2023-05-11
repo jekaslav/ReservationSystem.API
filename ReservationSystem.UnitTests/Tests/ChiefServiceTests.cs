@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -40,7 +41,7 @@ namespace ReservationSystem.UnitTests.Tests
         }
 
         [Fact]
-        public async Task<bool> CreateChief_PropertiesValuesCreatedCorrectly()
+        public async Task CreateChief_PropertiesValuesCreatedCorrectly()
         {
             var chiefDto = new ChiefDto
             {
@@ -60,12 +61,10 @@ namespace ReservationSystem.UnitTests.Tests
             Assert.NotNull(chief);
             Assert.Equal(chiefDto.Email, chief.Email);
             Assert.Equal(chiefDto.Name, chief.Name);
-
-            return true;
         }
 
         [Fact]
-        public async Task<bool> UpdateChief_PropertiesValuesCreatedCorrectly()
+        public async Task UpdateChief_PropertiesValuesCreatedCorrectly()
         {
             var chiefDto = new ChiefDto
             {
@@ -85,33 +84,30 @@ namespace ReservationSystem.UnitTests.Tests
             Assert.NotNull(chief);
             Assert.Equal(chiefDto.Email, chief.Email);
             Assert.Equal(chiefDto.Name, chief.Name);
-            
-            return true;
         }
 
         [Fact]
-        public async Task<bool> DeleteChief_ChiefIsDeleted()
+        public async Task DeleteChief_ChiefIsDeleted()
         {
+            var deleteId = 1;
             var chiefEntity = await Context.Chiefs
                 .AsNoTracking()
-                .Where(x => x.Id == 1)
+                .Where(x => x.Id == deleteId)
                 .FirstOrDefaultAsync();
             Assert.NotNull(chiefEntity);
-            
-            var isDeleted = await _service.Delete(chiefEntity.Id, CancellationToken.None);
+
+            var isDeleted = await _service.Delete(deleteId, CancellationToken.None);
             Assert.True(isDeleted);
-            
+
             var deletedChief = await Context.Chiefs
                 .AsNoTracking()
-                .Where(x => x.Id == chiefEntity.Id)
+                .Where(x => x.Id == deleteId)
                 .FirstOrDefaultAsync();
             Assert.Null(deletedChief);
-
-            return true;
         }
 
         [Fact]
-        public async Task<bool> TakeControlChief_RelationshipValueCreatedCorrectly()
+        public async Task TakeControlChief_RelationshipValueCreatedCorrectly()
         {
             var classroomId = 2;
             var chiefId = 1;
@@ -126,12 +122,10 @@ namespace ReservationSystem.UnitTests.Tests
                 .FirstOrDefaultAsync(CancellationToken.None);
             
             Assert.NotNull(chiefClassroom);
-
-            return true;
         }
 
         [Fact]
-        public async Task<bool> ReleaseControlChief_RelationshipValueDeleted()
+        public async Task ReleaseControlChief_RelationshipValueDeleted()
         {
             var classroomId = 2;
             var chiefId = 1;
@@ -151,8 +145,86 @@ namespace ReservationSystem.UnitTests.Tests
                 .FirstOrDefaultAsync();
 
             Assert.Null(deletedChiefClassroom);
+        }
+        
+        [Fact]
+        public async Task GetChiefById_ThrowsArgumentExceptionForNegativeId()
+        {
+            var negativeId = -1;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.GetChiefById(negativeId, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task CreateChief_ThrowsArgumentExceptionForInvalidName()
+        {
+            var chiefDto = new ChiefDto
+            {
+                Id = 2,
+                Name = null,
+                Email = "test_chief@example.com"
+            };
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Create(chiefDto, CancellationToken.None));
+        }
 
-            return true;
+        [Fact]
+        public async Task CreateChief_ThrowsArgumentExceptionForInvalidEmail()
+        {
+            var chiefDto = new ChiefDto
+            {
+                Id = 2,
+                Name = "TestChief",
+                Email = null
+            };
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Create(chiefDto, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task UpdateChief_ThrowsArgumentExceptionForNegativeId()
+        {
+            var chiefDto = new ChiefDto
+            {
+                Name = "UpdatedChiefName",
+                Email = "updated_chief_email@example.com"
+            };
+            var negativeId = -1;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Update(negativeId, chiefDto, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task DeleteChief_ThrowsArgumentExceptionForNegativeId()
+        {
+            var negativeId = -1;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Delete(negativeId, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task TakeControlChief_ThrowsArgumentExceptionForNegativeClassroomOrChiefId()
+        {
+            var negativeClassroomId = -2;
+            var negativeChiefId = -1;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.TakeControl(negativeClassroomId, negativeChiefId, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task ReleaseControlChief_ThrowsArgumentExceptionForNegativeClassroomOrChiefId()
+        {
+            var negativeClassroomId = -2;
+            var negativeChiefId = -1;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.ReleaseControl(negativeClassroomId, negativeChiefId, CancellationToken.None));
         }
     }
 }

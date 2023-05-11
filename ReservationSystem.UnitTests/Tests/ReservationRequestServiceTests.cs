@@ -42,7 +42,7 @@ namespace ReservationSystem.UnitTests.Tests
         }
         
         [Fact]
-        public async Task<bool> CreateReservationRequest_PropertiesValuesCreatedCorrectly()
+        public async Task CreateReservationRequest_PropertiesValuesCreatedCorrectly()
         {
             var requestDto = new ReservationRequestDto
             {
@@ -63,12 +63,10 @@ namespace ReservationSystem.UnitTests.Tests
             Assert.NotNull(updatedRequest);
             Assert.Equal(requestDto.StudentId, updatedRequest.StudentId);
             Assert.Equal(requestDto.ClassroomId, updatedRequest.ClassroomId);
-
-            return true;
         }
         
         [Fact] 
-        public async Task<bool> UpdateReservationRequest_PropertiesValuesCreatedCorrectly()
+        public async Task UpdateReservationRequest_PropertiesValuesCreatedCorrectly()
         {
             var requestDto = new ReservationRequestDto
             {
@@ -92,33 +90,30 @@ namespace ReservationSystem.UnitTests.Tests
             Assert.Equal(requestDto.ClassroomId, updatedRequest.ClassroomId);
             Assert.Equal(requestDto.StartTime, updatedRequest.StartTime);
             Assert.Equal(requestDto.EndTime, updatedRequest.EndTime);
-
-            return true;
         }
         
         [Fact]
-        public async Task<bool> DeleteReservationRequest_RequestIsDeleted()
+        public async Task DeleteReservationRequest_RequestIsDeleted()
         {
+            var deleteId = 7;
             var reservationRequestEntity = await Context.ReservationRequests
                 .AsNoTracking()
-                .Where(x => x.Id == 7)
+                .Where(x => x.Id == deleteId)
                 .FirstOrDefaultAsync();
             Assert.NotNull(reservationRequestEntity);
             
-            var isDeleted = await _service.Delete(reservationRequestEntity.Id, CancellationToken.None);
+            var isDeleted = await _service.Delete(deleteId, CancellationToken.None);
             Assert.True(isDeleted);
             
             var deletedRequest = await Context.ReservationRequests
                 .AsNoTracking()
-                .Where(x => x.Id == reservationRequestEntity.Id)
+                .Where(x => x.Id == deleteId)
                 .FirstOrDefaultAsync();
             Assert.Null(deletedRequest);
-
-            return true;
         }
 
         [Fact]
-        public async Task<bool> GetReservationRequestsForClassroom_CorrectlyNotNull()
+        public async Task GetReservationRequestsForClassroom_CorrectlyNotNull()
         {
             var classroomId = 2;
             var chiefId = 1;
@@ -128,12 +123,10 @@ namespace ReservationSystem.UnitTests.Tests
             Assert.NotNull(result);
             Assert.NotEmpty(result);
             Assert.All(result, rq => Assert.Equal(classroomId, rq.ClassroomId));
-
-            return true;
         }
         
         [Fact]
-        public async Task <bool> UpdateReservationRequestStatus_UpdatesStatus_WhenReservationRequestExists()
+        public async Task UpdateReservationRequestStatus_UpdatesStatus_WhenReservationRequestExists()
         {
             var reservationRequestId = 7;
             var chiefId = 1;
@@ -153,7 +146,47 @@ namespace ReservationSystem.UnitTests.Tests
 
             Assert.NotNull(updatedRequest);
             Assert.Equal(newStatus, updatedRequest.Status);
-            return true;
+        }
+        
+        [Fact]
+        public async Task GetReservationRequestById_ThrowsArgumentExceptionForNegativeId()
+        {
+            var negativeId = -1;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.GetRequestById(negativeId, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task CreateReservationRequest_ThrowsArgumentNullExceptionForNullDto()
+        {
+            await Assert.ThrowsAsync<ArgumentNullException>(() 
+                => _service.Create(null, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task UpdateReservationRequest_ThrowsArgumentExceptionForNegativeId()
+        {
+            var requestDto = new ReservationRequestDto
+            {
+                StudentId = 1,
+                ClassroomId = 1,
+                StartTime = DateTimeOffset.Now,
+                EndTime = DateTimeOffset.Now.AddHours(1),
+            };
+            var negativeId = -7;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Update(negativeId, requestDto, CancellationToken.None));
+        }
+        
+        [Fact]
+        public async Task DeleteReservationRequest_ThrowsArgumentExceptionForNegativeId()
+        {
+            var negativeId = -7;
+            
+            await Assert.ThrowsAsync<ArgumentException>(() 
+                => _service.Delete(negativeId, CancellationToken.None));
         }
     }
 }
