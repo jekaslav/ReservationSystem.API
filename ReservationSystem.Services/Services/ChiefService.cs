@@ -119,7 +119,7 @@ namespace ReservationSystem.Services.Services
                 throw new BadHttpRequestException("Invalid ID");
             }
             
-            var chiefToDelete = await ReservationDbContext.ChiefClassrooms
+            var chiefToDelete = await ReservationDbContext.Chiefs
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync(cancellationToken);
             
@@ -128,7 +128,7 @@ namespace ReservationSystem.Services.Services
                 throw new NullReferenceException();
             }
 
-            ReservationDbContext.ChiefClassrooms.Remove(chiefToDelete);
+            ReservationDbContext.Chiefs.Remove(chiefToDelete);
 
             await ReservationDbContext.SaveChangesAsync(cancellationToken);
             return true;

@@ -62,7 +62,7 @@ namespace ReservationSystem.Services.Services
             return result;
         }
         
-        public async Task<int> Create(ReservationRequestDto requestDto, CancellationToken cancellationToken)
+        public async Task<bool> Create(ReservationRequestDto requestDto, CancellationToken cancellationToken)
         {
             if (requestDto is null)
             {
@@ -79,8 +79,8 @@ namespace ReservationSystem.Services.Services
             
             ReservationDbContext.ReservationRequests.Add(newRequest);
             await ReservationDbContext.SaveChangesAsync(cancellationToken);
-            
-            return newRequest.Id;
+
+            return true;
         }
         
         public async Task<bool> Update(int id, ReservationRequestDto requestDto, CancellationToken cancellationToken)
