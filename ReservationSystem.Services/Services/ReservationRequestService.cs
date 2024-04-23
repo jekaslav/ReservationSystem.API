@@ -153,6 +153,7 @@ namespace ReservationSystem.Services.Services
                 .Where(x => x.ClassroomId == request.ClassroomId)
                 .Where(x => x.ChiefId == chiefId)
                 .FirstOrDefaultAsync(cancellationToken);
+            
             if (chiefClassroom is null)
             {
                 return false;
@@ -161,6 +162,7 @@ namespace ReservationSystem.Services.Services
             var reservationService = new ReservationService(ReservationDbContext);
             var success = await reservationService.CreateReservation(request.StudentId, request.ClassroomId,
                 request.StartTime, request.EndTime, cancellationToken);
+            
             if (!success)
             {
                 return false;
@@ -173,6 +175,7 @@ namespace ReservationSystem.Services.Services
             {
                 var reservationCreated = await reservationService.CreateReservation(request.StudentId, request.ClassroomId, 
                     request.StartTime, request.EndTime, cancellationToken);
+                
                 if (!reservationCreated)
                 {
                     throw new Exception("reservation does not exist");

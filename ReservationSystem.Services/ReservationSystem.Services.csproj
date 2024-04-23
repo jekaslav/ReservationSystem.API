@@ -16,6 +16,7 @@
       <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="5.0.17" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.17" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.17" />
+      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.10" />
       <PackageReference Include="xunit" Version="2.5.0-pre.11" />
       <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
         <PrivateAssets>all</PrivateAssets>

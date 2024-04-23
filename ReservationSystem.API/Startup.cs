@@ -38,9 +38,10 @@ namespace ReservationSystem.API
                     options.SerializerSettings.Converters.Add(new StringEnumConverter());
                 });
 
-            var connection = Configuration.GetConnectionString("SqlConnection");
+            var connection = Configuration.GetConnectionString("PostgresConnection");
             services.AddDbContext<ReservationDbContext>(options =>
-                options.UseSqlServer(connection, b => b.MigrationsAssembly("ReservationSystem.API")));
+                options.UseNpgsql(connection, b => b.MigrationsAssembly("ReservationSystem.Domain")));
+
             
             services.AddSwaggerGen(c =>
             {
