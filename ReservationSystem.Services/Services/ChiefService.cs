@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using ReservationSystem.Domain.Contexts;
 using ReservationSystem.Domain.Entities;
 using ReservationSystem.Domain.Models;
@@ -14,28 +16,31 @@ using ReservationSystem.Services.Interfaces;
 namespace ReservationSystem.Services.Services
 {
     public class ChiefService : IChiefService
-    {
+    {   
+        private readonly IMemoryCache Cache;
         private ReservationDbContext ReservationDbContext { get; }
-        
         private IMapper Mapper { get; }
 
-        public ChiefService(ReservationDbContext context, IMapper mapper)
+        public ChiefService(IMemoryCache cache, ReservationDbContext context, IMapper mapper)
         {
+            Cache = cache;
             ReservationDbContext = context;
             Mapper = mapper;
         }
 
         public async Task<IEnumerable<ChiefDto>> GetAllChiefs(CancellationToken cancellationToken)
         {
-            var chiefs = await ReservationDbContext.Chiefs
+            if (Cache.TryGetValue<IEnumerable<ChiefDto>>("AllChiefs", out var chiefs))
+            {
+                return chiefs;
+            }
+
+            chiefs = await ReservationDbContext.Chiefs
                 .AsNoTracking()
                 .Select(x => Mapper.Map<ChiefDto>(x))
                 .ToListAsync(cancellationToken);
-
-            if (chiefs == null)
-            {
-                throw new NullReferenceException();
-            }
+            
+            Cache.Set("AllChiefs", chiefs, TimeSpan.FromMinutes(30));
 
             return chiefs;
         }
@@ -47,10 +52,15 @@ namespace ReservationSystem.Services.Services
                 throw new BadHttpRequestException("Invalid ID");
             }
             
-            var chiefs = await ReservationDbContext.Chiefs
-                .AsNoTracking()
-                .Where(x => x.Id == id)
-                .FirstOrDefaultAsync(cancellationToken);
+            var chiefs = await Cache.GetOrCreateAsync($"Chief-{id}", async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30);
+                return await ReservationDbContext.Chiefs
+                    .AsNoTracking()
+                    .Where(x => x.Id == id)
+                    .Select(x => Mapper.Map<ChiefDto>(x))
+                    .FirstOrDefaultAsync(cancellationToken);
+            });
             
             if (chiefs is null)
             {

@@ -16,13 +16,13 @@ namespace ReservationSystem.UnitTests.Tests
     {
         private readonly ChiefService _service;
 
-        public ChiefServiceTests()
-        {
-            var config = new MapperConfiguration(x => { x.CreateMap<ChiefEntity, ChiefDto>(); });
-            var mapper = config.CreateMapper();
-
-            _service = new ChiefService(Context, mapper);
-        }
+        // public ChiefServiceTests()
+        // {
+        //     var config = new MapperConfiguration(x => { x.CreateMap<ChiefEntity, ChiefDto>(); });
+        //     var mapper = config.CreateMapper();
+        //
+        //     _service = new ChiefService(Context, mapper);
+        // }
 
         [Fact]
         public void GetAllChiefs_NotNull()

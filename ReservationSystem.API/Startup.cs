@@ -41,7 +41,8 @@ namespace ReservationSystem.API
             var connection = Configuration.GetConnectionString("PostgresConnection");
             services.AddDbContext<ReservationDbContext>(options =>
                 options.UseNpgsql(connection, b => b.MigrationsAssembly("ReservationSystem.Domain")));
-
+            
+            services.AddMemoryCache();
             
             services.AddSwaggerGen(c =>
             {
