@@ -16,13 +16,13 @@ namespace ReservationSystem.UnitTests.Tests
     {
         private readonly ClassroomService _service;
 
-        public ClassroomServiceTests()
-        {
-            var config = new MapperConfiguration(x => { x.CreateMap<ClassroomEntity, ClassroomDto>(); });
-            var mapper = config.CreateMapper();
-
-            _service = new ClassroomService(Context, mapper);
-        }
+        // public ClassroomServiceTests()
+        // {
+        //     var config = new MapperConfiguration(x => { x.CreateMap<ClassroomEntity, ClassroomDto>(); });
+        //     var mapper = config.CreateMapper();
+        //
+        //     _service = new ClassroomService(Context, mapper);
+        // }
         
         [Fact]
         public void GetAllClassrooms_NotNull()

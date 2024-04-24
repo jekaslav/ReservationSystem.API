@@ -30,6 +30,7 @@ namespace ReservationSystem.API
             services.AddScoped<IChiefService, ChiefService>();
             services.AddScoped<IClassroomService, ClassroomService>();
             services.AddScoped<IReservationRequestService, ReservationRequestService>();
+            services.AddScoped<IRedisCacheService, RedisCacheService>();
             
             
             services.AddControllers()
@@ -48,6 +49,13 @@ namespace ReservationSystem.API
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ReservationSystem.API", Version = "v1" });
             });
+
+            services.AddStackExchangeRedisCache(options =>
+            {
+                var connectionRedis = Configuration.GetValue<string>("Redis:ConnectionString");
+                options.Configuration = connectionRedis;
+            });
+
         }
         
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

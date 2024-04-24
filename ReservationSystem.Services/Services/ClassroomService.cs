@@ -18,26 +18,43 @@ namespace ReservationSystem.Services.Services
         private ReservationDbContext ReservationDbContext { get; }
         private IMapper Mapper { get; }
         
-        public ClassroomService(ReservationDbContext context, IMapper mapper)
+        private readonly IRedisCacheService CacheService;
+        
+        public ClassroomService(ReservationDbContext context, IMapper mapper, IRedisCacheService cacheService)
         {
             ReservationDbContext = context;
             Mapper = mapper;
+            CacheService = cacheService;
         }
         
         public async Task<IEnumerable<ClassroomDto>> GetAllClassrooms(CancellationToken cancellationToken)
         {
+            var cacheKey = "AllClassrooms";
+            
+            var cachedClassrooms = await CacheService.GetDataAsync<IEnumerable<ClassroomDto>>(cacheKey);
+            
+            if (cachedClassrooms != null)
+            {
+                return cachedClassrooms;
+            }
+            
             var classrooms = await ReservationDbContext.Classrooms
                 .AsNoTracking()
                 .Select(x => Mapper.Map<ClassroomDto>(x))
                 .ToListAsync(cancellationToken);
-
-            if (classrooms is null)
+            
+            if (classrooms != null)
+            {
+                await CacheService.AddDataAsync(cacheKey, classrooms, TimeSpan.FromMinutes(30));
+            }
+            else
             {
                 throw new NullReferenceException();
             }
-            
+
             return classrooms;
         }
+
         
         public async Task<ClassroomDto> GetClassroomById(int id, CancellationToken cancellationToken)
         {
